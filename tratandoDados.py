@@ -29,3 +29,5 @@ plt.xlabel('Gênero')
 plt.ylabel('Quantidade')
 plt.title('Quantidade de Títulos por Gênero')
 plt.show()
+
+# TODO agrupar os titulos repetidos complementando valores faltantes
