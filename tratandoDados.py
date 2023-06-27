@@ -34,3 +34,9 @@ plt.show()
 
 
 dataframe_transformado.to_csv('dataframe_transformado.csv', index=False)
+
+#TODO criar uma nova coluna classificando por genero. 
+# Pegar um genero especifico, comparar com todos que tem esse genero, e dar uma classificação. 
+# Ainda nao pensei em caso o filme tenha mais de 1 genero
+
+
