@@ -4,30 +4,33 @@ import matplotlib.pyplot as plt
 # Estou importando um dataframe que baixei aqui https://www.kaggle.com/datasets/krishnaraj30/movies-and-tv-shows
 dataframe = pd.read_csv('series.csv')
 
-# aqui vou gravar o tanto de linha que tinha antes de eu fazer o tratamento, para ter um parametro
-total_linhas_antes = len(dataframe)
+dataframe_transformado = dataframe.copy()
 
-# Aqui estou verificando se as colunas que eu considero importante não são vazias ou nulas
-colunas_obrigatorias = ['title', 'year', 'genre', 'rating', 'votes', 'duration']
-linhas_nulas = dataframe[colunas_obrigatorias].isnull().any(axis=1)
-dataframe_limpo = dataframe[~linhas_nulas]
+# Preenchendo os valores ausentes nas colunas 'duration', 'genre', 'rating' e 'directors' pois são as colunas que estão faltando
+dataframe_transformado['duration'] = dataframe_transformado['duration'].fillna('Desconhecido')
+dataframe_transformado['genre'] = dataframe_transformado['genre'].fillna('Desconhecido')
+dataframe_transformado['rating'] = dataframe_transformado['rating'].fillna(0)
+dataframe_transformado['directors'] = dataframe_transformado['directors'].fillna('Desconhecido')
 
-# Aqui vou tirar todas as oujtras colunas, que por enquanto não vou usar elas. E nesse dataframe que eu importei nao estão completas
-colunas_indesejadas = set(dataframe.columns) - set(colunas_obrigatorias)
-dataframe_limpo = dataframe_limpo.drop(columns=colunas_indesejadas)
-
-# Decidi fazer isso pois nao entendi o motivo de ter tanta serie repetida nesse dataframe. 
-# Nao é uma boa solução mas nao sabia como decidir o que era pra manter ou nao
-dataframe_limpo = dataframe_limpo.sort_values('votes', ascending=False).drop_duplicates(subset='title')
-
-# Aqui separo os genenores e vou contando para gerar o grafico no final
-generos = dataframe_limpo['genre'].str.split(', ', expand=True).stack().value_counts()
+# Agrupando por título e juntando as informações
+dataframe_transformado = dataframe_transformado.groupby('title').agg({
+    'ranking': 'first',
+    'year': 'first',
+    'duration': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else None,
+    'genre': lambda x: ', '.join(set(x)),
+    'rating': 'mean',
+    'directors': lambda x: ', '.join(set(x)),
+    'votes': 'sum'
+}).reset_index()
 
 # Gráfico
+generos = dataframe_transformado['genre'].str.split(', ', expand=True).stack().value_counts()
 generos.plot(kind='bar', figsize=(10, 6))
 plt.xlabel('Gênero')
 plt.ylabel('Quantidade')
 plt.title('Quantidade de Títulos por Gênero')
+plt.savefig('grafico.png', dpi=300)  # Salvar o gráfico como uma imagem PNG
 plt.show()
 
-# TODO agrupar os titulos repetidos complementando valores faltantes
+
+dataframe_transformado.to_csv('dataframe_transformado.csv', index=False)
