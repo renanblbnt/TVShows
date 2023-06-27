@@ -17,9 +17,9 @@ dataframe_transformado = dataframe_transformado.groupby('title').agg({
     'ranking': 'first',
     'year': 'first',
     'duration': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else None,
-    'genre': lambda x: ', '.join(set(x)),
-    'rating': 'mean',
-    'directors': lambda x: ', '.join(set(x)),
+    'genre': lambda x: ', '.join(set(x)) if 'Desconhecido' not in x.values else ', '.join(set(x.values) - {'Desconhecido'}),
+    'rating': lambda x: x.mean() if 0 not in x.values else x[x != 0].mean(),
+    'directors': lambda x: ', '.join(set(x)) if 'Desconhecido' not in x.values else ', '.join(set(x.values) - {'Desconhecido'}),
     'votes': 'sum'
 }).reset_index()
 
@@ -30,7 +30,6 @@ plt.xlabel('Gênero')
 plt.ylabel('Quantidade')
 plt.title('Quantidade de Títulos por Gênero')
 plt.savefig('grafico.png', dpi=300)  # Salvar o gráfico como uma imagem PNG
-plt.show()
 
 
 dataframe_transformado.to_csv('dataframe_transformado.csv', index=False)
